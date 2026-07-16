@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProjectStatus {
+  ONGOING
+  COMPLETED
+}
+
+enum SkillCategory {
+  HARD_SKILL
+  SOFT_SKILL
+  TOOL
+}
+
+model Profile {
+  id                String       @id @default(uuid())
+  fullName          String
+  professionalTitle String
+  heroDescription   String
+  avatarUrl         String
+  cvUrl             String
+  aboutNarrative    String
+  email             String
+  linkedinUrl       String?
+  githubUrl         String?
+  instagramUrl      String?
+  phone             String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  education         Education[]
+  experience        Experience[]
+  projects          Project[]
+  skills            Skill[]
+}
+
+model Education {
+  id         String   @id @default(uuid())
+  profileId  String
+  schoolName String
+  degree     String
+  period     String
+  location   String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Experience {
+  id          String   @id @default(uuid())
+  profileId   String
+  position    String
+  company     String
+  period      String
+  description String[]
+  achievement String?
+  tools       String[]
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id               String        @id @default(uuid())
+  profileId        String
+  title            String
+  slug             String        @unique
+  description      String
+  thumbnail        String
+  projectType      String
+  status           ProjectStatus
+  techStack        String[]
+  githubUrl        String?
+  liveSiteUrl      String?
+  overview         String
+  problemStatement String
+  solution         String
+  features         String[]
+  role             String
+  timeline         String
+  sortOrder        Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  profile          Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id        String        @id @default(uuid())
+  profileId String
+  name      String
+  category  SkillCategory // Wait, the instruction says "enum SkillCategory", let's make it SkillCategory!
+  level     Int           @default(0)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  profile   Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+}
