@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, Send, CheckCircle2 } from 'lucide-react';
+import { useContact } from '../../hooks/useContact';
 
 // Custom LinkedIn Icon SVG
 const LinkedinIcon = ({ size = 18 }) => (
@@ -60,13 +61,12 @@ const GithubIcon = ({ size = 18 }) => (
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({ name: '', email: '', message: '' });
+  const { sendMessage, loading, success, error: apiError, resetStates } = useContact();
 
   const contactInfo = [
     { label: 'Email', value: 'adeimah045@gmail.com', icon: <Mail size={18} />, href: 'mailto:adeimah045@gmail.com' },
-    { label: 'LinkedIn', value: 'linkedin.com/in/adeimah', icon: <LinkedinIcon size={18} />, href: 'https://linkedin.com/in/adeimah' },
+    { label: 'LinkedIn', value: 'linkedin.com/in/adeimah', icon: <LinkedinIcon size={18} />, href: 'https://www.linkedin.com/in/adee-imah/' },
     { label: 'GitHub', value: 'github.com/adeimah', icon: <GithubIcon size={18} />, href: 'https://github.com/adeimah' },
     { label: 'Instagram', value: '@adeeimh__', icon: <InstagramIcon size={18} />, href: 'https://instagram.com/adeeimh__' },
     { label: 'Phone', value: '088213406152', icon: <Phone size={18} />, href: 'https://wa.me/6288213406152' },
@@ -75,25 +75,50 @@ const ContactSection = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear validation error on change
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    
+    // Reset field errors
+    const newErrors = { name: '', email: '', message: '' };
+    let isValid = true;
 
-    // Simple validation
-    if (!formData.name.trim()) return setError('Full name is required.');
-    if (!formData.email.trim() || !formData.email.includes('@')) return setError('Please enter a valid email address.');
-    if (formData.message.trim().length < 10) return setError('Message must be at least 10 characters long.');
+    // Validate name
+    if (!formData.name.trim()) {
+      newErrors.name = 'Full name is required.';
+      isValid = false;
+    }
 
-    setLoading(true);
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email address is required.';
+      isValid = false;
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address.';
+      isValid = false;
+    }
 
-    // Simulate sending data to API server (2 seconds)
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
+    // Validate message
+    if (formData.message.trim().length < 10) {
+      newErrors.message = 'Message must be at least 10 characters long.';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+
+    if (!isValid) return;
+
+    // Send message using custom hook
+    const result = await sendMessage(formData);
+    if (result.success) {
       setFormData({ name: '', email: '', message: '' });
-    }, 2000);
+    }
   };
 
   return (
@@ -168,7 +193,7 @@ const ContactSection = () => {
               className="p-8 bg-obsidian-card border border-obsidian-border rounded-2xl relative shadow-premium transition-colors duration-300"
             >
               
-              {submitted ? (
+              {success ? (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -176,12 +201,12 @@ const ContactSection = () => {
                   className="flex flex-col items-center justify-center py-16 text-center space-y-4"
                 >
                   <CheckCircle2 size={54} className="text-glow-cyan animate-bounce" />
-                  <h3 className="text-2xl text-white font-bold">Message Sent!</h3>
+                  <h3 className="text-2xl text-white font-bold">Message sent successfully!</h3>
                   <p className="text-neutral-400 max-w-md text-sm leading-relaxed">
-                    Thank you for reaching out! Your message has been saved, and an email notification is being forwarded to my inbox. I will get back to you as soon as possible.
+                    Thank you for reaching out.<br />I'll get back to you soon.
                   </p>
                   <button 
-                    onClick={() => setSubmitted(false)}
+                    onClick={resetStates}
                     className="mt-6 px-6 py-2 bg-neutral-900 border border-obsidian-border rounded-xl text-xs font-mono text-white hover:bg-neutral-800 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
                   >
                     Send a New Message
@@ -191,9 +216,9 @@ const ContactSection = () => {
                 <form onSubmit={handleFormSubmit} className="space-y-6">
                   <h3 className="text-xl text-white font-semibold mb-4">Send a Message</h3>
 
-                  {error && (
+                  {apiError && (
                     <div className="p-3 bg-red-950/50 border border-red-800/30 rounded-xl text-xs font-mono text-red-400">
-                      * {error}
+                      * {apiError}
                     </div>
                   )}
 
@@ -210,6 +235,7 @@ const ContactSection = () => {
                       disabled={loading}
                       className="w-full px-4 py-3 bg-neutral-950/60 border border-obsidian-border rounded-xl text-sm text-white placeholder-neutral-600 focus:border-neutral-700 focus:outline-none transition-colors"
                     />
+                    {errors.name && <span className="text-red-500 text-xs font-mono mt-1 block">{errors.name}</span>}
                   </div>
 
                   {/* Email Input */}
@@ -225,6 +251,7 @@ const ContactSection = () => {
                       disabled={loading}
                       className="w-full px-4 py-3 bg-neutral-950/60 border border-obsidian-border rounded-xl text-sm text-white placeholder-neutral-600 focus:border-neutral-700 focus:outline-none transition-colors"
                     />
+                    {errors.email && <span className="text-red-500 text-xs font-mono mt-1 block">{errors.email}</span>}
                   </div>
 
                   {/* Message Input */}
@@ -240,16 +267,20 @@ const ContactSection = () => {
                       disabled={loading}
                       className="w-full px-4 py-3 bg-neutral-950/60 border border-obsidian-border rounded-xl text-sm text-white placeholder-neutral-600 focus:border-neutral-700 focus:outline-none transition-colors resize-none"
                     />
+                    {errors.message && <span className="text-red-500 text-xs font-mono mt-1 block">{errors.message}</span>}
                   </div>
 
-                  {/* Submit Button with Premium Micro Interactions */}
+                  {/* Submit Button */}
                   <button 
                     type="submit"
                     disabled={loading}
                     className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white text-black font-bold rounded-xl hover:bg-neutral-200 hover:-translate-y-[2px] hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] active:scale-[0.98] disabled:bg-neutral-800 disabled:text-neutral-500 disabled:-translate-y-0 disabled:scale-100 disabled:shadow-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer"
                   >
                     {loading ? (
-                      <span className="w-5 h-5 border-2 border-neutral-600 border-t-black rounded-full animate-spin" />
+                      <>
+                        <span className="w-5 h-5 border-2 border-neutral-600 border-t-black rounded-full animate-spin mr-1" />
+                        <span>Sending...</span>
+                      </>
                     ) : (
                       <>
                         <Send size={16} />

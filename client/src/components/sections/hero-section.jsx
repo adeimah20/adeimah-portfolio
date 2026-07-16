@@ -75,15 +75,7 @@ const DigitalParticles = () => {
   );
 };
 
-const HeroSection = () => {
-  const handleScrollToAbout = (e) => {
-    e.preventDefault();
-    const element = document.getElementById('about');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
+const HeroSection = ({ profile }) => {
   return (
     <section 
       id="hero" 
@@ -123,7 +115,7 @@ const HeroSection = () => {
             className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs font-mono text-glow-cyan backdrop-blur-md shadow-premium hover:border-glow-cyan/50 hover:bg-white/10 transition-all duration-300 group cursor-default select-none mb-6"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 group-hover:scale-125 transition-transform duration-300 animate-pulse" />
-            <span className="font-mono">QA Engineer • IT Project Manager • UI/UX Designer</span>
+            <span className="font-mono">{profile.professionalTitle}</span>
           </motion.div>
 
           {/* Premium Space Grotesk Heading with Stagger Mask Reveal Animation */}
@@ -144,7 +136,7 @@ const HeroSection = () => {
                 transition={{ duration: 1.0, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
                 className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-100 to-neutral-400 drop-shadow-sm font-display"
               >
-                ADE IMAH
+                {profile.fullName.toUpperCase()}
               </motion.span>
               <motion.span
                 initial={{ scale: 0, rotate: -20 }}
@@ -162,11 +154,9 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-neutral-400 text-sm sm:text-base md:text-lg max-w-[540px] leading-relaxed font-sans mb-8 tracking-wide"
+            className="text-neutral-400 text-sm sm:text-base md:text-lg max-w-[540px] leading-relaxed font-sans mb-8 tracking-wide whitespace-pre-line"
           >
-            Turning ideas into digital experiences through thoughtful design, quality-driven testing, and strategic project management.
-            <br /><br />
-            I believe that great products are built by combining creativity, precision, and collaboration.
+            {profile.heroDescription}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -177,19 +167,24 @@ const HeroSection = () => {
             className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center lg:justify-start"
           >
             <a 
-              href="/documents/cv-professional.pdf" 
-              download="CV_Ade_Imah.pdf"
+              href={profile.cvUrl} 
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-center gap-2.5 px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-100 hover:scale-[1.05] hover:-translate-y-[2px] hover:shadow-[0_0_25px_rgba(255,255,255,0.18)] active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group"
             >
               <Download size={16} className="group-hover:translate-y-[1px] transition-transform duration-300" />
               <span>View My Resume</span>
             </a>
             <a 
-              href="#about" 
-              onClick={handleScrollToAbout}
+              href="#projects" 
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById('projects');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
               className="flex items-center justify-center gap-2.5 px-8 py-3.5 bg-gradient-to-r from-[#06B6D4] to-[#2563EB] text-white font-semibold rounded-xl hover:from-[#08c7e6] hover:to-[#3b82f6] hover:scale-[1.05] hover:-translate-y-[2px] hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group"
             >
-              <span>Learn More</span>
+              <span>Explore Projects</span>
               <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform duration-300" />
             </a>
           </motion.div>
@@ -264,8 +259,8 @@ const HeroSection = () => {
                 {/* Profile image with full color, centered face */}
                 <div className="w-full h-full bg-obsidian rounded-full overflow-hidden p-1.5 backdrop-blur-md">
                   <img 
-                    src={profileImg} 
-                    alt="Ade Imah Portrait" 
+                    src={profile.avatarUrl || profileImg} 
+                    alt={`${profile.fullName} Portrait`} 
                     className="w-full h-full object-cover rounded-full select-none"
                   />
                 </div>

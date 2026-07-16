@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { GraduationCap } from 'lucide-react';
+import { useEducation } from '../../hooks/useEducation';
 
-const AboutSection = () => {
+const AboutSection = ({ profile }) => {
+  const { education, loading, error } = useEducation();
+
   return (
     <section id="about" className="py-24 bg-obsidian border-b border-obsidian-border/50 relative overflow-hidden">
       {/* Background glow accent */}
@@ -26,7 +29,7 @@ const AboutSection = () => {
           <div className="h-[1px] flex-grow bg-obsidian-border/50 hidden md:block max-w-md" />
         </div>
 
-        {/* Layout Grid - items-stretch to align left and right column heights perfectly */}
+        {/* Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
           
           {/* Main Description */}
@@ -34,15 +37,14 @@ const AboutSection = () => {
             <h3 className="text-2xl text-white font-semibold leading-snug">
               Bridging quality software, agile project coordination, and AI-powered solutions.
             </h3>
-            <p className="text-neutral-400 text-base leading-relaxed">
-              I'm a 4th-semester Information Systems and Technology student with a strong interest in Quality Assurance (QA), IT Project Management, and AI Engineering. I enjoy building reliable software, managing digital projects efficiently, and leveraging artificial intelligence to create meaningful solutions.
-            </p>
-            <p className="text-neutral-400 text-base leading-relaxed">
-              Through academic and personal projects, I have continuously developed my skills in software testing, project coordination, and AI technologies. I believe that continuous learning, adaptability, and collaboration are essential for delivering high-quality digital products and making a positive impact in the technology industry.
-            </p>
+            {profile?.aboutNarrative?.split('\n\n').map((para, index) => (
+              <p key={index} className="text-neutral-400 text-base leading-relaxed">
+                {para}
+              </p>
+            ))}
           </div>
 
-          {/* Education Timeline Card with premium Micro Interactions */}
+          {/* Education Timeline Card */}
           <motion.div 
             whileHover={{ 
               y: -6, 
@@ -59,21 +61,33 @@ const AboutSection = () => {
             </div>
             
             <div className="relative border-l border-obsidian-border pl-5 ml-2.5 space-y-8 flex-grow flex flex-col justify-center">
-              {/* Cakrawala University */}
-              <div className="relative">
-                <div className="absolute -left-[25px] top-1.5 w-2.5 h-2.5 rounded-full bg-glow-cyan" />
-                <h5 className="text-white text-sm sm:text-base font-semibold">Cakrawala University</h5>
-                <p className="text-neutral-300 text-xs sm:text-sm font-medium mt-1">Bachelor's Degree in Information Systems and Technology</p>
-                <p className="text-neutral-500 text-[11px] font-mono mt-1.5">South Jakarta, Indonesia | 2024 – Present (Current: 4th Semester)</p>
-              </div>
-              
-              {/* SMK Tirta Sari Surya */}
-              <div className="relative">
-                <div className="absolute -left-[25px] top-1.5 w-2.5 h-2.5 rounded-full bg-obsidian-border border border-neutral-600" />
-                <h5 className="text-white text-sm sm:text-base font-semibold">SMK Tirta Sari Surya</h5>
-                <p className="text-neutral-300 text-xs sm:text-sm font-medium mt-1">Accounting</p>
-                <p className="text-neutral-500 text-[11px] font-mono mt-1.5">East Jakarta, Indonesia | 2022 – 2024</p>
-              </div>
+              {loading ? (
+                <div className="flex items-center gap-2 text-neutral-500 font-mono text-xs py-4">
+                  <span className="w-4 h-4 border-2 border-glow-cyan border-t-transparent rounded-full animate-spin" />
+                  <span>Loading education...</span>
+                </div>
+              ) : error ? (
+                <div className="text-red-500 font-mono text-xs py-4">
+                  <span>Unable to load education data.</span>
+                </div>
+              ) : (
+                education.map((item, index) => {
+                  const isCurrent = index === 0 || item.period.toLowerCase().includes('present');
+                  return (
+                    <div key={item.id} className="relative">
+                      <div className={isCurrent 
+                        ? "absolute -left-[25px] top-1.5 w-2.5 h-2.5 rounded-full bg-glow-cyan shadow-[0_0_8px_#00F0FF]" 
+                        : "absolute -left-[25px] top-1.5 w-2.5 h-2.5 rounded-full bg-obsidian-border border border-neutral-600"
+                      } />
+                      <h5 className="text-white text-sm sm:text-base font-semibold">{item.schoolName}</h5>
+                      <p className="text-neutral-300 text-xs sm:text-sm font-medium mt-1">{item.degree}</p>
+                      <p className="text-neutral-500 text-[11px] font-mono mt-1.5">
+                        {item.location} | {item.period}
+                      </p>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </motion.div>
 

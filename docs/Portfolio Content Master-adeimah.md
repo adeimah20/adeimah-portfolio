@@ -104,7 +104,7 @@ _May 2026 – Present_
 
 Instagram : @adeeimh__ (https://www.instagram.com/adeeimh__/) 
 
-Linkedln: linkedin.com/in/adee-imah 
+Linkedln: (https://www.linkedin.com/in/adee-imah/)
 
 Email: adeimah045@gmail.com whatsapp: <u>wa.me/6288213406152</u> 
 
